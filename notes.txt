@@ -1,0 +1,83 @@
+TWEET 5: Dorothy Bland: I was caught 'walking while black' - Dallas Morning News https://t.co/EvcWF8pdss
+
+STANFORD NEs
+(u'Dorothy', u'PERSON')
+(u'Dallas', u'LOCATION')
+
+NLTK NEs
+(PERSON Dorothy/NNP)
+--
+(GPE Bland/NNP)
+--
+-------------
+
+TWEET 6: NBA Trade Rumors: Chicago Bulls Moving Derrick Rose Within This Season?: Will point guard Derrick Rose https://t.co/aJf9rQ8bmn #Kpopstarz
+
+STANFORD NEs
+(u'NBA', u'ORGANIZATION')
+(u'Trade', u'ORGANIZATION')
+(u'Rumors:', u'ORGANIZATION')
+(u'Chicago', u'ORGANIZATION')
+(u'Bulls', u'ORGANIZATION')
+(u'Derrick', u'PERSON')
+(u'Rose', u'PERSON')
+(u'Derrick', u'PERSON')
+(u'Rose', u'PERSON')
+
+NLTK NEs
+(ORGANIZATION NBA/NNP)
+--
+(PERSON Season/NNP)
+--
+(PERSON Will/NNP)
+--
+-------------
+
+
+def get_text(post):
+    m = post.get("message", None)
+    if m:
+        return m
+    else: 
+        s = post.get("story", None)
+        if s:
+            return s
+    return None
+
+from nltk import ne_chunk, pos_tag, word_tokenize
+from nltk.tree import Tree
+
+def get_continuous_chunks(text):
+    chunked = ne_chunk(pos_tag(word_tokenize(text)))
+    prev = None
+    continuous_chunk = []
+    current_chunk = []
+
+    for i in chunked:
+        if type(i) == Tree:
+            current_chunk.append(" ".join([token for token, pos in i.leaves()]))
+        elif current_chunk:
+            named_entity = " ".join(current_chunk)
+            if named_entity not in continuous_chunk:
+                continuous_chunk.append(named_entity)
+                current_chunk = []
+        else:
+            continue
+
+    return continuous_chunk
+
+## pure nltk
+import nltk
+def extract_entities(text):
+    for sent in nltk.sent_tokenize(text):
+        for chunk in nltk.ne_chunk(nltk.pos_tag(nltk.word_tokenize(sent))):
+            if hasattr(chunk, 'node'):
+                print chunk.node, ' '.join(c[0] for c in chunk.leaves())
+
+import difflib
+
+a='abcd'
+b='ab123'
+seq=difflib.SequenceMatcher(None, a,b)
+d=seq.ratio()*100
+print d
